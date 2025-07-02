@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prometheus.exe - BOURDON & Associates</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">
+            <h2>⚖️ Prometheus.exe</h2>
+            <span>BOURDON & Associates</span>
+        </div>
+        <div class="nav-menu">
+            <button class="nav-btn active" data-section="dashboard" onclick="showSection('dashboard')">Dashboard</button>
+            <button class="nav-btn" data-section="clients" onclick="showSection('clients')">Clients</button>
+            <button class="nav-btn" data-section="matters" onclick="showSection('matters')">Dossiers</button>
+            <button class="nav-btn" data-section="timetracking" onclick="showSection('timetracking')">Time Tracking</button>
+            <button class="nav-btn" data-section="billing" onclick="showSection('billing')">Facturation</button>
+            <button class="nav-btn" data-section="documents" onclick="showSection('documents')">Documents</button>
+            <button class="nav-btn" data-section="analytics" onclick="showSection('analytics')">Analytics</button>
+        </div>
+        <div class="timer-widget">
+            <button id="timerBtn" onclick="toggleTimer()">▶️ Start Timer</button>
+            <span id="timerDisplay">00:00:00</span>
+        </div>
+    </nav>
+
+    <!-- DASHBOARD SECTION -->
+    <section id="dashboard" class="main-section active">
+        <div class="dashboard-header">
+            <h1>Dashboard</h1>
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <h3 id="totalClients">0</h3>
+                    <p>Clients</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalMatters">0</h3>
+                    <p>Dossiers</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalHours">0.0</h3>
+                    <p>Heures (mois)</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalRevenue">0€</h3>
+                    <p>CA estimé</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-content">
+            <div class="recent-matters">
+                <h3>Dossiers récents</h3>
+                <div id="recentMattersList" class="matters-list">
+                    <p class="empty-state">Aucun dossier créé</p>
+                </div>
+            </div>
+            
+            <div class="recent-time">
+                <h3>Temps aujourd'hui</h3>
+                <div id="todayTimeList" class="time-list">
+                    <p class="empty-state">Aucun temps enregistré</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CLIENTS SECTION -->
+    <section id="clients" class="main-section">
+        <div class="section-header">
+            <h1>Gestion Clients</h1>
+            <button class="btn-primary" onclick="showAddClientForm()">+ Nouveau Client</button>
+        </div>
+        
+        <div id="addClientForm" class="form-container" style="display: none;">
+            <h3>Nouveau Client</h3>
+            <form onsubmit="addClient(event)">
+                <input type="text" id="clientName" placeholder="Nom du client" required>
+                <input type="text" id="clientContact" placeholder="Contact principal">
+                <input type="email" id="clientEmail" placeholder="Email">
+                <select id="clientTier">
+                    <option value="Tier 1">Tier 1</option>
+                    <option value="Tier 2">Tier 2</option>
+                    <option value="Tier 3">Tier 3</option>
+                </select>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Créer</button>
+                    <button type="button" class="btn-secondary" onclick="hideAddClientForm()">Annuler</button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="clientsList" class="clients-list">
+            <p class="empty-state">Aucun client créé</p>
+        </div>
+    </section>
+
+    <!-- MATTERS SECTION -->
+    <section id="matters" class="main-section">
+        <div class="section-header">
+            <h1>Gestion Dossiers</h1>
+            <button class="btn-primary" onclick="showAddMatterForm()">+ Nouveau Dossier</button>
+        </div>
+        
+        <div id="addMatterForm" class="form-container" style="display: none;">
+            <h3>Nouveau Dossier</h3>
+            <form onsubmit="addMatter(event)">
+                <select id="matterPractice" required>
+                    <option value="">Sélectionner Practice Area</option>
+                    <option value="MA">MA - Mergers & Acquisitions</option>
+                    <option value="CP">CP - Corporate</option>
+                    <option value="LTG">LTG - Litigation</option>
+                    <option value="LT">LT - Legal & Tax</option>
+                    <option value="BK">BK - Banking</option>
+                    <option value="IP">IP - Intellectual Property</option>
+                </select>
+                <select id="matterClient" required>
+                    <option value="">Sélectionner Client</option>
+                </select>
+                <input type="text" id="matterTitle" placeholder="Titre du dossier" required>
+                <textarea id="matterDescription" placeholder="Description"></textarea>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Créer</button>
+                    <button type="button" class="btn-secondary" onclick="hideAddMatterForm()">Annuler</button>
+                </div>
+            </form>
+        </div>
+        
+        <div id="mattersList" class="matters-list">
+            <p class="empty-state">Aucun dossier créé</p>
+        </div>
+    </section>
+
+    <!-- TIME TRACKING SECTION -->
+    <section id="timetracking" class="main-section">
+        <div class="section-header">
+            <h1>Time Tracking</h1>
+        </div>
+        
+        <div class="timer-section">
+            <div class="timer-controls">
+                <div class="timer-display-large" id="timerDisplayLarge">00:00:00</div>
+                <div class="timer-buttons">
+                    <button id="timerBtnLarge" onclick="toggleTimer()" class="btn-timer">▶️ Start</button>
+                    <button onclick="resetTimer()" class="btn-secondary">🔄 Reset</button>
+                </div>
+                <div class="timer-matter-select">
+                    <label>Dossier:</label>
+                    <select id="timerMatter">
+                        <option value="">Sélectionner un dossier</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="time-entries">
+            <h3>Entrées de temps</h3>
+            <div id="timeEntriesList" class="time-list">
+                <p class="empty-state">Aucune entrée de temps</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- BILLING SECTION -->
+    <section id="billing" class="main-section">
+        <div class="section-header">
+            <h1>Facturation</h1>
+            <button class="btn-primary" onclick="generateInvoice()">+ Nouvelle Facture</button>
+        </div>
+        
+        <!-- User Level Selection -->
+        <div class="billing-config">
+            <h3>Configuration Utilisateur</h3>
+            <div class="user-level-select">
+                <label>Votre niveau :</label>
+                <select id="userLevel" onchange="updateUserRate()">
+                    <option value="collaborateur">Collaborateur (250€/h)</option>
+                    <option value="associe">Associé (500€/h)</option>
+                </select>
+                <span id="currentRate">Taux actuel: 250€/h</span>
+            </div>
+        </div>
+        
+        <!-- Invoice Generation -->
+        <div id="invoiceForm" class="form-container" style="display: none;">
+            <h3>Nouvelle Facture</h3>
+            <form onsubmit="createInvoice(event)">
+                <div class="invoice-header">
+                    <div class="form-row">
+                        <input type="text" id="invoiceClient" placeholder="Client" required>
+                        <input type="date" id="invoiceDate" required>
+                    </div>
+                    <div class="form-row">
+                        <select id="invoiceCurrency">
+                            <option value="EUR">EUR (€)</option>
+                            <option value="USD">USD ($)</option>
+                            <option value="GBP">GBP (£)</option>
+                        </select>
+                        <input type="text" id="invoiceNumber" placeholder="N° Facture" required>
+                    </div>
+                </div>
+                
+                <div class="time-entries-selection">
+                    <h4>Sélectionner les entrées de temps :</h4>
+                    <div id="billableTimeEntries" class="billable-entries">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                
+                <div class="invoice-summary">
+                    <div class="summary-row">
+                        <span>Total Heures :</span>
+                        <span id="totalHoursBilling">0.0h</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Total HT :</span>
+                        <span id="totalAmountHT">0€</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>TVA (20%) :</span>
+                        <span id="totalVAT">0€</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total TTC :</span>
+                        <span id="totalAmountTTC">0€</span>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Générer Facture PDF</button>
+                    <button type="button" class="btn-secondary" onclick="hideInvoiceForm()">Annuler</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Invoices List -->
+        <div class="invoices-section">
+            <h3>Factures Générées</h3>
+            <div id="invoicesList" class="invoices-list">
+                <p class="empty-state">Aucune facture générée</p>
+            </div>
+        </div>
+        
+        <!-- Export Section -->
+        <div class="export-section">
+            <h3>Export Comptabilité</h3>
+            <div class="export-controls">
+                <input type="month" id="exportMonth" value="">
+                <button class="btn-secondary" onclick="exportAccounting()">Export Excel</button>
+                <button class="btn-secondary" onclick="exportCSV()">Export CSV</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- DOCUMENTS SECTION - NOUVELLE VERSION OPTIMISÉE -->
+    <section id="documents" class="main-section">
+        <div class="section-header">
+            <h1>Gestion Documents</h1>
+            <button class="btn-primary" onclick="showUploadForm()">+ Upload Document</button>
+        </div>
+        
+        <!-- Upload Form with Enhanced Drag & Drop -->
+        <div id="uploadForm" class="form-container" style="display: none;">
+            <h3>📁 Nouveau Document</h3>
+            
+            <!-- Enhanced Drag & Drop Zone -->
+            <div class="upload-zone">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-visual">
+                        <div class="upload-icon">📎</div>
+                        <div class="upload-text">
+                            <h4>Glissez vos fichiers ici</h4>
+                            <p id="uploadStatus">ou cliquez pour sélectionner</p>
+                            <small>Formats supportés: PDF, DOC, DOCX, TXT, JPG, PNG</small>
+                        </div>
+                    </div>
+                    <input type="file" id="documentFile" multiple accept=".pdf,.doc,.docx,.txt,.jpg,.png,.xls,.xlsx">
+                </div>
+                
+                <!-- Upload Progress (hidden by default) -->
+                <div class="upload-progress" id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <span class="progress-text" id="progressText">0%</span>
+                </div>
+            </div>
+            
+            <!-- Document Form -->
+            <form onsubmit="uploadDocument(event)" id="documentUploadForm">
+                <div class="document-details">
+                    <div class="form-group">
+                        <label for="documentMatter">Dossier associé :</label>
+                        <select id="documentMatter" required>
+                            <option value="">Sélectionner un dossier</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="documentType">Type de document :</label>
+                        <select id="documentType" required>
+                            <option value="contract">📄 Contrat</option>
+                            <option value="duediligence">🔍 Due Diligence</option>
+                            <option value="correspondence">✉️ Correspondance</option>
+                            <option value="opinion">⚖️ Legal Opinion</option>
+                            <option value="note">📝 Note</option>
+                            <option value="other">📋 Autre</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="documentDescription">Description (optionnel) :</label>
+                        <textarea id="documentDescription" placeholder="Description du document" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary" id="submitUpload" disabled>
+                        <span class="btn-icon">📤</span>
+                        Upload Document(s)
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="hideUploadForm()">Annuler</button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Documents Filter & Search -->
+        <div class="documents-filter">
+            <div class="filter-group">
+                <label>Dossier :</label>
+                <select id="filterMatter" onchange="filterDocuments()">
+                    <option value="">Tous les dossiers</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label>Type :</label>
+                <select id="filterType" onchange="filterDocuments()">
+                    <option value="">Tous les types</option>
+                    <option value="contract">Contrats</option>
+                    <option value="duediligence">Due Diligence</option>
+                    <option value="correspondence">Correspondance</option>
+                    <option value="opinion">Legal Opinions</option>
+                    <option value="note">Notes</option>
+                    <option value="other">Autres</option>
+                </select>
+            </div>
+            
+            <div class="filter-group search-group">
+                <label>Recherche :</label>
+                <input type="text" id="searchDocuments" placeholder="Rechercher un document..." onkeyup="filterDocuments()">
+            </div>
+        </div>
+        
+        <!-- Documents List -->
+        <div class="documents-container">
+            <div id="documentsList" class="documents-grid">
+                <p class="empty-state">Aucun document uploadé</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ANALYTICS SECTION -->
+    <section id="analytics" class="main-section">
+        <div class="section-header">
+            <h1>Analytics & Reporting</h1>
+            <div class="period-selector">
+                <select id="analyticsPeriod" onchange="updateAnalytics()">
+                    <option value="month">Ce mois</option>
+                    <option value="quarter">Ce trimestre</option>
+                    <option value="year">Cette année</option>
+                    <option value="all">Tout</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- KPIs Row -->
+        <div class="analytics-kpis">
+            <div class="kpi-card">
+                <h3 id="kpiRevenue">0€</h3>
+                <p>Chiffre d'Affaires</p>
+                <span id="kpiRevenueChange" class="kpi-change">+0%</span>
+            </div>
+            <div class="kpi-card">
+                <h3 id="kpiHours">0h</h3>
+                <p>Heures Facturables</p>
+                <span id="kpiHoursChange" class="kpi-change">+0%</span>
+            </div>
+            <div class="kpi-card">
+                <h3 id="kpiRate">0€</h3>
+                <p>Taux Moyen</p>
+                <span id="kpiRateChange" class="kpi-change">+0%</span>
+            </div>
+            <div class="kpi-card">
+                <h3 id="kpiUtilization">0%</h3>
+                <p>Utilization Rate</p>
+                <span id="kpiUtilizationChange" class="kpi-change">+0%</span>
+            </div>
+        </div>
+        
+        <!-- Charts Row -->
+        <div class="analytics-charts">
+            <div class="chart-container">
+                <h3>📈 Évolution CA</h3>
+                <canvas id="revenueChart" width="400" height="200"></canvas>
+            </div>
+            
+            <div class="chart-container">
+                <h3>🥧 Répartition Practice Areas</h3>
+                <canvas id="practiceChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        
+        <!-- Detailed Tables -->
+        <div class="analytics-tables">
+            <div class="table-container">
+                <h3>Top Clients par CA</h3>
+                <div id="topClientsTable" class="analytics-table"></div>
+            </div>
+            
+            <div class="table-container">
+                <h3>Profitabilité Dossiers</h3>
+                <div id="matterProfitabilityTable" class="analytics-table"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Keyboard Shortcuts Hint -->
+    <div class="keyboard-hint" id="keyboardHint">
+        <h4>⌨️ Raccourcis Clavier 
+            <button onclick="toggleKeyboardHint()" class="hint-close">✕</button>
+        </h4>
+        <ul>
+            <li><span>Recherche globale</span> <kbd>Ctrl+R</kbd></li>
+            <li><span>Dashboard</span> <kbd>Ctrl+D</kbd></li>
+            <li><span>Nouveau dossier</span> <kbd>Ctrl+N</kbd></li>
+            <li><span>Timer</span> <kbd>Ctrl+T</kbd></li>
+            <li><span>Clients</span> <kbd>Alt+C</kbd></li>
+            <li><span>Dossiers</span> <kbd>Alt+M</kbd></li>
+            <li><span>Documents</span> <kbd>Alt+D</kbd></li>
+            <li><span>Analytics</span> <kbd>Alt+A</kbd></li>
+        </ul>
+    </div>
+    
+    <!-- Error Display -->
+    <div class="error-display" id="errorDisplay" style="display: none;">
+        <div class="error-content">
+            <h4>⚠️ Erreur</h4>
+            <p id="errorMessage"></p>
+            <button onclick="hideError()" class="btn-secondary">Fermer</button>
+        </div>
+    </div>
+    
+    <script>
+        // Enhanced keyboard hint management
+        function toggleKeyboardHint() {
+            const hint = document.getElementById('keyboardHint');
+            const isVisible = hint.style.display !== 'none';
+            hint.style.display = isVisible ? 'none' : 'block';
+            localStorage.setItem('prometheus_hint_hidden', isVisible);
+        }
+        
+        // Error display function
+        function showError(message) {
+            const errorDisplay = document.getElementById('errorDisplay');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorDisplay.style.display = 'flex';
+        }
+        
+        function hideError() {
+            document.getElementById('errorDisplay').style.display = 'none';
+        }
+        
+        // Auto-hide hint management
+        document.addEventListener('DOMContentLoaded', function() {
+            const hintHidden = localStorage.getItem('prometheus_hint_hidden') === 'true';
+            const hint = document.getElementById('keyboardHint');
+            
+            if (hintHidden) {
+                hint.style.display = 'none';
+            } else {
+                // Auto-hide after 10 seconds for new users
+                setTimeout(() => {
+                    hint.style.opacity = '0.7';
+                    setTimeout(() => {
+                        hint.style.display = 'none';
+                        localStorage.setItem('prometheus_hint_hidden', 'true');
+                    }, 3000);
+                }, 10000);
+            }
+        });
+        
+        // Global error handler
+        window.addEventListener('error', function(event) {
+            console.error('Global error:', event.error);
+            showError('Une erreur inattendue s\'est produite. Consultez la console pour plus de détails.');
+        });
+        
+        // Unhandled promise rejection handler
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Unhandled promise rejection:', event.reason);
+            showError('Erreur de promesse non gérée. Consultez la console.');
+        });
+    </script>
+    
+    <script src="script.js"></script>
+</body>
+</html>
